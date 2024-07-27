@@ -2,7 +2,8 @@
 # config parameters
 Tjoffset=25 # offset from Tjmax (100 C) therefore 25 = max 75 C
 fan_speeds=(50 0x00 0x00 55 0x10 0x10 60 0x20 0x20 65 0x40 0x40 70 0xff 0xff 100 0xff 0xff) # Temperature, boost below fan 1, boost below fan 2
-processor_thermaldevice_location="/sys/bus/pci/devices/0000:00:04.0/tcc_offset_degree_celsius" # location of tcc_offset file 
+acpi_path="\_SB.AMWW.WMAX" # can be \_SB.AMW3.WMAX for some models
+processor_thermaldevice_location="/sys/bus/pci/devices/0000:00:04.0/tcc_offset_degree_celsius" # location of tcc_offset file, depends on system configuration
 # CONSTANTS - DO NOT CHANGE !
 get_laptop_model=(0x1a 0x02 0x02)
 get_power_mode=(0x14 0x0b 0x00)
@@ -25,7 +26,7 @@ sudo modprobe processor_thermal_device_pci
 
 function acpi_call {
     # $1 $2 $3 $4 - arguments to ACPI call.
-    echo "\_SB.AMWW.WMAX 0 ${1-0x00} {${2-0x00}, ${3-0x00}, ${4-0x00}, 0x00}" | sudo tee /proc/acpi/call > /dev/null; echo $(($(sudo cat /proc/acpi/call | tr -d '\0'))) # send acpi call and do black magic fuckery on the return value
+    echo "$acpi_path 0 ${1-0x00} {${2-0x00}, ${3-0x00}, ${4-0x00}, 0x00}" | sudo tee /proc/acpi/call > /dev/null; echo $(($(sudo cat /proc/acpi/call | tr -d '\0'))) # send acpi call and convert return value to decimal
 }
 # main loop
 while true;
